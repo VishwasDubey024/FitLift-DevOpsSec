@@ -1,0 +1,28 @@
+
+name: FitLift Pipeline Setup
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install & Build Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      - name: SSH and Deploy Test
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "Deployment Pipeline Triggered!"
+            mkdir -p /home/ubuntu/fitlift-app
