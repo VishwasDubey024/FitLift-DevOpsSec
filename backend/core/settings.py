@@ -25,13 +25,14 @@ SECRET_KEY = 'django-insecure-7j5n**d%ppa5lwcxbervmleei&#_y1dysg$*$j9ac+v!z7+4os
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['3.94.115.213', 'localhost']
+ALLOWED_HOSTS = ['3.94.115.213', 'localhost','127.0.0.1']
 
 
 # Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
+    'rest_framework.authtoken',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -102,7 +103,11 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -120,3 +125,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+CORS_ALLOW_ALL_ORIGINS = True

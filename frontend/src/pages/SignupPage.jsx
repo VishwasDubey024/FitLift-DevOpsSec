@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
 import { User, Mail, Weight, Ruler } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; 
 
 const SignupPage = () => {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({ goal: '', gender: '', age: '' });
+
+    const [formData, setFormData] = useState({ username: '',
+         email: '',
+          password: '',
+           weight: '', 
+           height: '', 
+           age: '', 
+           goal: '' });
 
     const goals = [
         { id: 'loss', label: 'Weight Loss', icon: '🔥' },
@@ -12,9 +20,30 @@ const SignupPage = () => {
         { id: 'endurance', label: 'Endurance', icon: '🏃' }
     ];
 
-    const handleRegister = (e) => {
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleRegister = async (e) => {
         e.preventDefault();
-        navigate('/login');
+
+        if (!formData.goal) {
+            alert("Please select a fitness goal!");
+            return;
+        }
+
+        try {
+            
+            const response = await axios.post('http://127.0.0.1:8000/api/register/', formData);
+
+            if (response.status === 201) {
+                alert("Account Created! FitLift community mein swagat hai.");
+                navigate('/login');
+            }
+        } catch (error) {
+            console.error("Signup Error:", error.response?.data);
+            alert("Error: " + (error.response?.data?.error || "Registration failed"));
+        }
     };
 
     return (
@@ -24,25 +53,68 @@ const SignupPage = () => {
 
                 <form className="space-y-6" onSubmit={handleRegister}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input placeholder="Full Name" className="bg-black/50 border border-white/10 rounded-xl p-4 outline-none focus:border-orange-600 text-white" required />
-                        <input placeholder="Email" type="email" className="bg-black/50 border border-white/10 rounded-xl p-4 outline-none focus:border-orange-600 text-white" required />
+                        
+                        <input
+                            name="username"
+                            placeholder="Full Name / Username"
+                            className="bg-black/50 border border-white/10 rounded-xl p-4 outline-none focus:border-orange-600 text-white"
+                            onChange={handleChange}
+                            required
+                        />
+                        <input
+                            name="email"
+                            placeholder="Email"
+                            type="email"
+                            className="bg-black/50 border border-white/10 rounded-xl p-4 outline-none focus:border-orange-600 text-white"
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
 
+                    <input
+                        name="password"
+                        type="password"
+                        placeholder="Create Password"
+                        className="w-full bg-black/50 border border-white/10 rounded-xl p-4 outline-none focus:border-orange-600 text-white"
+                        onChange={handleChange}
+                        required
+                    />
+
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <input placeholder="Weight (kg)" className="bg-black/50 border border-white/10 rounded-xl p-4 outline-none text-white" required />
-                        <input placeholder="Height (cm)" className="bg-black/50 border border-white/10 rounded-xl p-4 outline-none text-white" required />
-                        <select className="col-span-2 bg-black/50 border border-white/10 rounded-xl px-4 text-zinc-400 outline-none focus:border-orange-600" required>
+                        <input
+                            name="weight"
+                            type="number"
+                            placeholder="Weight (kg)"
+                            className="bg-black/50 border border-white/10 rounded-xl p-4 outline-none text-white focus:border-orange-600"
+                            onChange={handleChange}
+                            required
+                        />
+                        <input
+                            name="height"
+                            type="number"
+                            placeholder="Height (cm)"
+                            className="bg-black/50 border border-white/10 rounded-xl p-4 outline-none text-white focus:border-orange-600"
+                            onChange={handleChange}
+                            required
+                        />
+                        <select
+                            name="gender"
+                            className="col-span-2 bg-black/50 border border-white/10 rounded-xl px-4 text-zinc-400 outline-none focus:border-orange-600"
+                            onChange={handleChange}
+                            required
+                        >
                             <option value="">Select Gender</option>
-                            <option>Male</option>
-                            <option>Female</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
                         </select>
                     </div>
 
                     <input
+                        name="age"
                         type="number"
                         placeholder="Age"
                         className="w-full bg-black/50 border border-white/10 rounded-xl p-4 outline-none focus:border-orange-600 text-white"
-                        onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                        onChange={handleChange}
                         required
                     />
 
@@ -52,8 +124,8 @@ const SignupPage = () => {
                             {goals.map(g => (
                                 <div
                                     key={g.id}
-                                    onClick={() => setFormData({ ...formData, goal: g.id })}
-                                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all text-center ${formData.goal === g.id ? 'border-orange-600 bg-orange-600/10' : 'border-white/5 bg-black/20'}`}
+                                    onClick={() => setFormData({ ...formData, goal: g.label })}
+                                    className={`p-4 rounded-2xl border-2 cursor-pointer transition-all text-center ${formData.goal === g.label ? 'border-orange-600 bg-orange-600/10' : 'border-white/5 bg-black/20'}`}
                                 >
                                     <div className="text-2xl mb-1">{g.icon}</div>
                                     <div className="text-[10px] font-bold uppercase text-zinc-300">{g.label}</div>

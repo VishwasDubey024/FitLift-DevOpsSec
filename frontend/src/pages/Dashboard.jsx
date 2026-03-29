@@ -1,24 +1,87 @@
-import React from 'react';
-import {Home, PlusCircle, Settings, Users, User,LogOut, Download, Activity, TrendingUp, FireExtinguisher} from 'lucide-react';
-import {PieChart, Pie, Cell, ResponsiveContainer,Tooltip, Legend, BarChart, Bar, XAxis, YAxis} from 'recharts';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Home, PlusCircle, Settings, Users, User, LogOut, Download, Activity, TrendingUp, FireExtinguisher, Edit2 } from 'lucide-react';
 
 const Dashboard = () => {
-    const macroData = [
-        { name: 'Protein', value: 160, color: '#ea580c' }, 
-        { name: 'Carbs', value: 200, color: '#f97316' },   
-        { name: 'Fats', value: 70, color: '#fb923c' },    
-    ];
+    const [userData, setUserData] = useState({
+        username: 'User',
+        weight: 0,
+        height: 0,
+        age: 0,
+        goal: 'Fitness'
+    });
+    const [loading, setLoading] = useState(true);
 
-    const strengthData = [
-        { name: 'Squat', weight: 120 },
-        { name: 'Bench', weight: 80 },
-        { name: 'Deadlift', weight: 150 },
-    ];
+    const fetchDashboardData = async () => {
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            console.error("No token found. Please login first.");
+            setLoading(false);
+            window.location.href = '/login';
+            return;
+        }
+
+        try {
+            console.log("Fetching profile with token:", token);
+            const response = await axios.get('http://127.0.0.1:8000/api/profile/', {
+                headers: { 
+                    'Authorization': `Token ${token}` 
+                }
+            });
+            console.log("Dashboard Data Received:", response.data);
+            setUserData(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error("Dashboard Fetch Error:", error.response?.status, error.response?.data);
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, []);
+
+    const handleUpdateWeight = async () => {
+        const newWeight = prompt("Enter your new weight (kg):", userData.weight);
+        if (newWeight && !isNaN(newWeight)) {
+            try {
+                const token = localStorage.getItem('token');
+                await axios.patch('http://127.0.0.1:8000/api/profile/update/', 
+                    { weight: parseFloat(newWeight) },
+                    { headers: { Authorization: `Token ${token}` } }
+                );
+                alert("Weight Updated Successfully!");
+                fetchDashboardData(); 
+            } catch (error) {
+                console.error("Update failed:", error.response?.data);
+                alert("Update failed!");
+            }
+        }
+    };
+
+    const calculateBMI = (w, h) => {
+        if (!w || !h || h === 0) return "0.0";
+        const heightInMeters = h / 100;
+        const bmi = w / (heightInMeters * heightInMeters);
+        return bmi.toFixed(1);
+    };
+
+    const bmiValue = calculateBMI(userData.weight, userData.height);
 
     const handleLogout = () => {
-        localStorage.removeItem('access_token');
+        localStorage.clear(); // Saara data ek baar mein clear
         window.location.href = '/login';
     };
+
+    if (loading) {
+        return (
+            <div className="bg-black min-h-screen text-white flex flex-col items-center justify-center font-black italic uppercase tracking-widest">
+                <Activity className="text-orange-600 animate-spin mb-4" size={48} />
+                Loading FitLift Stats...
+            </div>
+        );
+    }
 
     return (
         <div className="flex min-h-screen bg-black text-white font-sans">
@@ -26,7 +89,6 @@ const Dashboard = () => {
                 <div className="text-3xl font-black italic uppercase tracking-tighter mb-12">
                     FitLift<span className="text-orange-600">.</span>
                 </div>
-
                 <nav className="flex-1 space-y-2">
                     <NavItem icon={<Home size={20} />} label="Home" active />
                     <NavItem icon={<PlusCircle size={20} />} label="Add PR" />
@@ -34,8 +96,7 @@ const Dashboard = () => {
                     <NavItem icon={<User size={20} />} label="Profile" />
                     <NavItem icon={<Settings size={20} />} label="Settings" />
                 </nav>
-
-                <button onClick={handleLogout}className="flex items-center gap-3 text-zinc-500 hover:text-red-500 transition-all mt-auto group">
+                <button onClick={handleLogout} className="flex items-center gap-3 text-zinc-500 hover:text-red-500 transition-all mt-auto group">
                     <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
                     <span className="font-black uppercase text-[10px] tracking-widest">Logout</span>
                 </button>
@@ -44,49 +105,47 @@ const Dashboard = () => {
             <main className="flex-1 ml-64 p-10">
                 <header className="flex justify-between items-center mb-12">
                     <div>
-                        <h1 className="text-5xl font-black uppercase italic tracking-tighter">Your Progress</h1>
-                        <p className="text-zinc-500 font-medium">Welcome back, Let's crush it today.</p>
+                        <h1 className="text-5xl font-black uppercase italic tracking-tighter leading-none">Your Progress</h1>
+                        <p className="text-zinc-500 font-medium italic mt-2">Welcome back, {userData.username}.</p>
                     </div>
-                    <div className="flex items-center gap-4 bg-zinc-900/50 border border-white/10 px-6 py-3 rounded-2xl">
-                        <Activity className="text-orange-600 animate-pulse" size={20} />
-                        <span className="text-xs font-black uppercase tracking-[0.2em]">Live Tracking</span>
-                    </div>
+                    <button 
+                        onClick={handleUpdateWeight}
+                        className="flex items-center gap-3 bg-orange-600 px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-orange-700 transition-all"
+                    >
+                        <Edit2 size={16} /> Update Stats
+                    </button>
                 </header>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                    <StatCard title="BMI Index" value="24.2" desc="Healthy Weight" color="text-green-500" />
-                    <StatCard title="Target Calories" value="2,800" desc="Muscle Gain Phase" color="text-orange-600" />
-                    <StatCard title="Daily Protein" value="160g" desc="Target Reached" color="text-blue-500" />
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
 
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <StatCard title="BMI Index" value={bmiValue} desc={parseFloat(bmiValue) < 25 ? "Healthy Range" : "Above Range"} color={parseFloat(bmiValue) < 25 ? "text-green-500" : "text-yellow-500"} />
+                    <StatCard title="Current Weight" value={`${userData.weight}kg`} desc={`Goal: ${userData.goal}`} color="text-orange-600" />
+                    <StatCard title="Body Height" value={`${userData.height}cm`} desc={`Age: ${userData.age} Years`} color="text-blue-500" />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
                     <div className="bg-zinc-900/40 backdrop-blur-md border border-white/5 p-8 rounded-[2.5rem]">
                         <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 mb-8 flex items-center gap-2">
-                            <TrendingUp size={14} /> Macro Distribution
+                            <TrendingUp size={14} /> Nutrition Focus
                         </h3>
-                        <div className="h-[300px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <div className="bg-zinc-900/40 p-8 rounded-[2.5rem] border border-white/5 flex items-center justify-center text-zinc-500">
-                                    Charts Loading soon...
-                                </div>
-                            </ResponsiveContainer>
+                        <div className="h-[300px] flex items-center justify-center border border-dashed border-white/10 rounded-3xl">
+                             <p className="text-zinc-600 italic font-bold uppercase text-[10px] tracking-widest">Tracking metrics for {userData.goal}...</p>
                         </div>
                     </div>
 
                     <div className="bg-gradient-to-br from-zinc-900 via-black to-orange-900/20 border border-orange-600/20 p-10 rounded-[2.5rem] flex flex-col justify-center items-center text-center relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 opacity-10"><FireExtinguisher size={100} /></div>
-                        <div className="w-20 h-20 bg-orange-600 rounded-3xl flex items-center justify-center mb-8 shadow-[0_20px_50px_rgba(234,88,12,0.3)] transform -rotate-6">
+                        <div className="w-20 h-20 bg-orange-600 rounded-3xl flex items-center justify-center mb-8 shadow-2xl shadow-orange-600/40 transform -rotate-6">
                             <Download className="text-white" size={36} />
                         </div>
                         <h2 className="text-3xl font-black uppercase italic mb-3 tracking-tighter text-white">Gemini AI Diet</h2>
                         <p className="text-zinc-400 text-sm mb-10 max-w-xs leading-relaxed">
-                            Get a personalized 7-day nutrition plan generated by AI based on your body stats.
+                            Custom nutrition plan for {userData.username} ({userData.weight}kg)
                         </p>
-                        <button className="w-full bg-white text-black font-black uppercase py-5 rounded-2xl hover:bg-orange-600 hover:text-white transition-all transform hover:-translate-y-1 active:scale-95 text-xs tracking-widest">
-                            Generate Diet Plan (PDF)
+                        <button className="w-full bg-white text-black font-black uppercase py-5 rounded-2xl hover:bg-orange-600 hover:text-white transition-all text-xs tracking-widest shadow-xl">
+                            Generate PDF
                         </button>
                     </div>
                 </div>
-
             </main>
         </div>
     );
