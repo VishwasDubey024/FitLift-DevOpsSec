@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "start": "react-scripts start",
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
     "axios": "^1.13.6",
