@@ -6,17 +6,18 @@ import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) setIsAuthenticated(true);
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true);
+    }
   }, []);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
-    navigate('/dashboard');
   };
 
   return (
@@ -24,6 +25,7 @@ function App() {
       <Route path="/" element={<LandingPage onStart={() => navigate('/signup')} />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+      
       <Route 
         path="/dashboard" 
         element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} 

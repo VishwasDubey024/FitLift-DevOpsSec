@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/axios'; 
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -13,16 +13,17 @@ const LoginPage = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/login/', credentials);
+            const response = await api.post('/login/', credentials);
             
             if (response.status === 200) {
-              
-                localStorage.setItem('token', response.data.token);
+                const token = response.data.token;
+                localStorage.setItem('token', token);
                 localStorage.setItem('username', response.data.username || credentials.username);
                 
-                console.log("Login Success. Token saved:", response.data.token);
-                alert("Welcome back to FitLift!");
-                navigate('/dashboard'); 
+                console.log("Login Success. Token saved:", token);
+                setTimeout(() => {
+                    window.location.href = '/dashboard'; 
+                }, 100);
             }
         } catch (error) {
             console.error("Login Error:", error.response?.data);
