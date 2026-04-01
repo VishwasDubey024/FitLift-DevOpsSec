@@ -4,6 +4,7 @@ import LandingPage from './pages/LandingPage';
 import SignupPage from './pages/SignupPage';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
 import AddPR from './pages/AddPR';
 
 function App() {
@@ -35,7 +36,12 @@ function App() {
         path="/add-pr"
         element={isAuthenticated ? <AddPR /> : <Navigate to="/login" />}
       />
+      <Route
+        path="/profile"
+        element={isAuthenticated ? <Profile /> : <Navigate to="/login" />}
+      />
     </Routes>
+    
 
 
   );
