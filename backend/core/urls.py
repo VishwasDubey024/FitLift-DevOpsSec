@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from fitness_api import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('fitness_api.urls')),
+    path('api/generate-diet/', views.generate_diet_plan, name='generate-diet')
 ]
