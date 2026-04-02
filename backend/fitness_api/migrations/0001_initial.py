@@ -15,15 +15,52 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Profile',
+            name="Profile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('height', models.FloatField(default=0.0)),
-                ('weight', models.FloatField(default=0.0)),
-                ('age', models.IntegerField(default=18)),
-                ('gender', models.CharField(choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')], default='Male', max_length=10)),
-                ('fitness_goal', models.CharField(choices=[('loss', 'Weight Loss'), ('gain', 'Muscle Gain'), ('endurance', 'Endurance')], default='gain', max_length=20)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("height", models.FloatField(default=0.0)),
+                ("weight", models.FloatField(default=0.0)),
+                ("age", models.IntegerField(default=18)),
+                (
+                    "gender",
+                    models.CharField(
+                        choices=[
+                            ("Male", "Male"),
+                            ("Female", "Female"),
+                            ("Other", "Other"),
+                        ],
+                        default="Male",
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "fitness_goal",
+                    models.CharField(
+                        choices=[
+                            ("loss", "Weight Loss"),
+                            ("gain", "Muscle Gain"),
+                            ("endurance", "Endurance"),
+                        ],
+                        default="gain",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="profile",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]
