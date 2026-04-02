@@ -26,7 +26,7 @@ const LandingPage = ({ onStart }) => {
         
 
         <p className="text-lg md:text-xl font-light italic text-zinc-300 mb-12 max-w-xl mx-auto leading-relaxed border-l-2 border-orange-600 pl-4">
-          "The only bad workout is the one that didn't happen."
+          "The only bad workout."
         </p>
         
         <button 
