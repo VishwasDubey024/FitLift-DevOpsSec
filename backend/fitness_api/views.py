@@ -12,10 +12,8 @@ from django.http import FileResponse
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
-# Gemini Configuration
 genai.configure(api_key="AIzaSyDd7_CBgRbt1XMoyZEg3ytpYnI_AQK5ZTU")
 
-# --- AUTHENTICATION ---
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -23,13 +21,14 @@ def register_user(request):
     data = request.data
     try:
         if User.objects.filter(username=data.get('username')).exists():
-            return Response({"error": "Username already taken"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Bhai, ye username pehle se booked hai!"}, status=400)
 
         user = User.objects.create_user(
             username=data.get('username'),
             password=data.get('password'),
             email=data.get('email', '')
         )
+        
         UserProfile.objects.create(
             user=user,
             age=int(data.get('age', 25)),
@@ -37,25 +36,22 @@ def register_user(request):
             height=float(data.get('height', 170.0)),
             goal=data.get('goal', 'Fitness')
         )
-        return Response({"message": "Registration Successful"}, status=status.HTTP_201_CREATED)
+        return Response({"message": "Registration Successful!"}, status=201)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": str(e)}, status=400)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
     username = request.data.get('username')
     password = request.data.get('password')
-    if not username or not password:
-        return Response({"error": "Provide both username and password"}, status=400)
-
     user = authenticate(username=username, password=password)
+    
     if user:
         token, _ = Token.objects.get_or_create(user=user)
-        return Response({"token": token.key, "username": user.username}, status=status.HTTP_200_OK)
-    return Response({"error": "Invalid Credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"token": token.key, "username": user.username}, status=200)
+    return Response({"error": "Invalid Credentials"}, status=401)
 
-# --- PROFILE & ANALYTICS (For Pie Chart) ---
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -64,40 +60,31 @@ def get_user_profile(request):
         profile = request.user.userprofile
         w = profile.weight
         goal = profile.goal
-
-        # --- ANALYTICAL ENGINE: Macro Calculation ---
-        calories = int(w * 33) # Baseline TDEE
+        calories = int(w * 33) 
         
-        # Logic: Based on goal, partition macros
         if goal == "Muscle Gain":
-            protein_g = int(w * 2.2)
-            fats_g = int((calories * 0.25) / 9)
+            p_g, f_g = int(w * 2.2), int((calories * 0.25) / 9)
         elif goal == "Weight Loss":
-            protein_g = int(w * 1.8)
-            fats_g = int((calories * 0.2) / 9)
-        else: # Fitness
-            protein_g = int(w * 1.5)
-            fats_g = int((calories * 0.3) / 9)
+            p_g, f_g = int(w * 1.8), int((calories * 0.2) / 9)
+        else:
+            p_g, f_g = int(w * 1.5), int((calories * 0.3) / 9)
 
-        carbs_g = int((calories - (protein_g * 4 + fats_g * 9)) / 4)
+        c_g = int((calories - (p_g * 4 + f_g * 9)) / 4)
 
         return Response({
             "username": request.user.username,
-            "weight": w,
-            "height": profile.height,
-            "age": profile.age,
-            "goal": goal,
+            "weight": w, "height": profile.height, "age": profile.age, "goal": goal,
             "calories": calories,
             "macros": [
-                {"name": "Protein", "value": protein_g * 4, "grams": protein_g, "fill": "#ea580c"}, # Orange
-                {"name": "Carbs", "value": carbs_g * 4, "grams": carbs_g, "fill": "#ffffff"},   # White
-                {"name": "Fats", "value": fats_g * 9, "grams": fats_g, "fill": "#71717a"}     # Zinc
+                {"name": "Protein", "value": p_g * 4, "grams": p_g, "fill": "#ea580c"},
+                {"name": "Carbs", "value": c_g * 4, "grams": c_g, "fill": "#ffffff"},
+                {"name": "Fats", "value": f_g * 9, "grams": f_g, "fill": "#71717a"}
             ]
         })
     except UserProfile.DoesNotExist:
         return Response({"error": "Profile not found"}, status=404)
 
-@api_view(['PUT', 'PATCH'])
+@api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_user_profile(request):
     try:
@@ -108,11 +95,9 @@ def update_user_profile(request):
         if 'age' in data: profile.age = int(data['age'])
         if 'goal' in data: profile.goal = data['goal']
         profile.save()
-        return Response({"message": "Profile updated!"}, status=status.HTTP_200_OK)
+        return Response({"message": "Stats Updated!"}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-
-# --- PR TRACKING (CRUD) ---
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -124,7 +109,7 @@ def add_pr(request):
             weight=float(request.data.get('weight')),
             reps=int(request.data.get('reps'))
         )
-        return Response({"message": "PR Logged!"}, status=201)
+        return Response({"message": "PR Recorded!"}, status=201)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
@@ -143,7 +128,7 @@ def delete_pr(request, pk):
         pr.delete()
         return Response(status=204)
     except PersonalRecord.DoesNotExist:
-        return Response(status=404)
+        return Response({"error": "Not found"}, status=404)
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
@@ -159,17 +144,19 @@ def edit_pr(request, pk):
     except PersonalRecord.DoesNotExist:
         return Response(status=404)
 
-# --- AI DIET GENERATION ---
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def generate_diet_plan(request):
     try:
+        # Ye saari lines try ke andar indented honi chahiye (4 spaces)
         profile = request.user.userprofile
-        prompt = f"Professional 1-day diet plan for {request.user.username}: Age {profile.age}, Weight {profile.weight}kg, Goal {profile.goal}. Include Macros."
+        prompt = f"Professional 1-day diet plan for {request.user.username}: Weight {profile.weight}kg, Goal {profile.goal}. High protein, no asterisks."
 
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(prompt)
+        model = genai.GenerativeModel('gemini-pro') 
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(temperature=0.7)
+        )
         diet_text = response.text
 
         buffer = io.BytesIO()
@@ -181,20 +168,21 @@ def generate_diet_plan(request):
         p.setFont("Helvetica", 10)
         y = 710
         for line in diet_text.split('\n'):
-            p.drawString(100, y, line.replace('*', ''))
+            clean_line = line.replace('**', '').replace('*', '')
+            p.drawString(100, y, clean_line)
             y -= 15
             if y < 50:
                 p.showPage()
                 y = 750
-
         p.save()
         buffer.seek(0)
-        return FileResponse(buffer, as_attachment=True, filename=f'{request.user.username}_Plan.pdf')
-
+        return FileResponse(buffer, as_attachment=True, filename='DietPlan.pdf')
+        
     except Exception as e:
+        print(f"ERROR: {str(e)}")
         return Response({"error": str(e)}, status=500)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def HealthCheck(request):
-    return Response({"status": "FitLift Backend is Running!", "version": "1.2.0"})
+    return Response({"status": "FitLift Backend Running!"})
