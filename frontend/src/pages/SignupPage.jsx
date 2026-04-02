@@ -34,7 +34,7 @@ const SignupPage = () => {
 
         try {
             
-            const response = await axios.post('http://127.0.0.1:8000/api/register/', formData);
+            const response = await axios.post('http://98.88.37.221:8000/api/register/', formData);
 
             if (response.status === 201) {
                 alert("Account Created! FitLift community mein swagat hai.");
