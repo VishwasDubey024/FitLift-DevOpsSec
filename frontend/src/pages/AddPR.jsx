@@ -5,7 +5,7 @@ import axios from 'axios';
 
 const AddPR = () => {
     const navigate = useNavigate();
-    const API_BASE_URL = 'http://127.0.0.1:8000';
+    const API_BASE_URL = 'http://98.88.37.221:8000';
     const [prData, setPrData] = useState({
         exercise_name: '',
         weight: '',
