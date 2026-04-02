@@ -32,7 +32,6 @@ const AddPR = () => {
     return (
         <div className="min-h-screen bg-black text-white p-6 md:p-12 flex flex-col items-center">
             <div className="w-full max-w-xl">
-                {/* Back Button */}
                 <button 
                     onClick={() => navigate('/dashboard')}
                     className="flex items-center gap-2 text-zinc-500 hover:text-orange-600 transition-all mb-12 group"
@@ -42,7 +41,6 @@ const AddPR = () => {
                 </button>
 
                 <div className="bg-zinc-900/40 border border-white/5 p-10 rounded-[2.5rem] backdrop-blur-xl relative overflow-hidden">
-                    {/* Background Decoration */}
                     <div className="absolute -top-10 -right-10 opacity-10">
                         <Trophy size={200} />
                     </div>
