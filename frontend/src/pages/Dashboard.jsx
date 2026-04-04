@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 const Dashboard = () => {
-    const API_BASE_URL = 'http://98.88.37.221:8000';
+    const API_BASE_URL = 'http://18.233.130.31:8000';
     const navigate = useNavigate();
 
     const [userData, setUserData] = useState({

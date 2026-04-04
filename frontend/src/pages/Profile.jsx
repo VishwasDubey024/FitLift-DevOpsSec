@@ -5,7 +5,7 @@ import { ArrowLeft, User, Save, Scale, Ruler, Calendar, Target } from 'lucide-re
 
 const Profile = () => {
     const navigate = useNavigate();
-    const API_BASE_URL = 'http://98.88.37.221:8000';
+    const API_BASE_URL = 'http://18.233.130.31:8000';
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState({
         username: '', weight: '', height: '', age: '', goal: 'Fitness'
