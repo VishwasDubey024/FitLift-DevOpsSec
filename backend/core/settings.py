@@ -54,7 +54,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = ["http://18.233.130.31", # Frontend IP
+CORS_ALLOWED_ORIGINS = ["http://18.233.130.31", 
     "http://localhost:3000"]
 
 ROOT_URLCONF = "core.urls"
